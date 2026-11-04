@@ -5,32 +5,175 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Brad Pepsi</title>
 <style>
+  /* Alte Haas Grotesk: put the font files in a "fonts" folder next to this page.
+     Until they're there, it falls back to Helvetica / Arial. */
+  @font-face {
+    font-family: "Alte Haas Grotesk";
+    src: local("Alte Haas Grotesk"), local("AlteHaasGrotesk"),
+         url("fonts/AlteHaasGrotesk.ttf") format("truetype");
+    font-weight: 400;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Alte Haas Grotesk";
+    src: local("Alte Haas Grotesk Bold"), local("AlteHaasGrotesk-Bold"),
+         url("fonts/AlteHaasGrotesk_Bold.ttf") format("truetype");
+    font-weight: 700;
+    font-display: swap;
+  }
+
+  :root {
+    --ink: #000;
+    --muted: #555;
+    --column: 720px;
+    --font: "Alte Haas Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
   body {
     margin: 0;
     background: #fff;
-    font-family: system-ui, sans-serif;
+    color: var(--ink);
+    font-family: var(--font);
+    -webkit-text-size-adjust: 100%;
   }
-  header {
-    display: flex;
-    justify-content: center;
-    padding: 24px 16px 8px;
+
+  /* One centered column; the title and the sections share its left edge */
+  .wrap {
+    max-width: var(--column);
+    margin: 0 auto;
+    padding: 28px 20px 80px;
   }
-  #title { width: min(760px, 100%); height: auto; }
+  @media (min-width: 900px) { .wrap { padding-top: 64px; } }
+
+  /* ---- Animated title ---- */
+  #title { display: block; width: 100%; height: auto; }
   /* Ink dots start hidden and pop in instantly: no fade, no scaling */
   #title circle.ink { opacity: 0; }
   #title circle.ink.on { opacity: 1; }
-  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+
+  /* ---- Dropdown sections ---- */
+  .sections { margin-top: 28px; }
+
+  .toggle {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45em;
+    width: 100%;
+    margin: 0;
+    padding: 9px 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 1.4rem;
+    line-height: 1.2;
+    text-align: left;
+    cursor: pointer;
+  }
+  .toggle:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  /* The little symbols. Change the characters in the content: lines to swap them.
+     Top-level sections use + and minus. */
+  .chev { font-size: 0.9em; color: var(--muted); }
+  .toggle[aria-expanded="false"] .chev::before { content: "+"; }
+  .toggle[aria-expanded="true"]  .chev::before { content: "\2212"; }
+
+  /* faq questions use > and < instead */
+  .toggle.sub .chev { font-size: 0.7em; }
+  .toggle.sub[aria-expanded="false"] .chev::before { content: ">"; }
+  .toggle.sub[aria-expanded="true"]  .chev::before { content: "<"; }
+
+  .panel { padding: 2px 0 14px; max-width: 34em; }
+  .panel[hidden] { display: none; }
+  .panel p { margin: 0 0 0.8em; font-size: 0.95rem; line-height: 1.4; }
+  .panel p:last-child { margin-bottom: 0; }
+  .panel a { color: inherit; font-weight: 700; text-underline-offset: 0.15em; }
+
+  /* faq: each question is its own dropdown, with the answer slightly indented */
+  .toggle.sub {
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 7px 0;
+  }
+  .answer { padding: 0 0 8px 1.25rem; }
+  #p-faq { padding-top: 0; }
 </style>
 </head>
 <body>
 
-<header>
-  <svg id="title" role="img" aria-label="Brad Pepsi" viewBox="34 0 5412 1045"></svg>
-</header>
+<div class="wrap">
 
-<main>
-  <p>Your page content goes here.</p>
-</main>
+  <header>
+    <svg id="title" role="img" aria-label="Brad Pepsi" viewBox="34 0 5412 1045"></svg>
+  </header>
+
+  <main class="sections">
+
+    <section>
+      <button class="toggle" id="t-info" aria-expanded="false" aria-controls="p-info">
+        <span>info</span><span class="chev" aria-hidden="true"></span>
+      </button>
+      <div class="panel" id="p-info" role="region" aria-labelledby="t-info" hidden>
+        <p>handpoke tattoo tattoo tattoo tattoo tattoo tattoo tattoo</p>
+      </div>
+    </section>
+
+    <section>
+      <button class="toggle" id="t-book" aria-expanded="false" aria-controls="p-book">
+        <span>book</span><span class="chev" aria-hidden="true"></span>
+      </button>
+      <div class="panel" id="p-book" role="region" aria-labelledby="t-book" hidden>
+        <p>please email <a href="mailto:hellobradpepsi@gmail.com">hellobradpepsi@gmail.com</a> with your name and an attached image or description of the flash or design you'd like, along with a rough estimate on size and desired placement.</p>
+        <p>if you have a specific budget, please include it here and i'll be more than happy to work within it!</p>
+        <p>if you have any other contact information of mine already, feel free to reach out elsewhere for tattoos.</p>
+      </div>
+    </section>
+
+    <section>
+      <button class="toggle" id="t-faq" aria-expanded="false" aria-controls="p-faq">
+        <span>faq</span><span class="chev" aria-hidden="true"></span>
+      </button>
+      <div class="panel" id="p-faq" role="region" aria-labelledby="t-faq" hidden>
+        <div class="qa">
+          <button class="toggle sub" id="t-q1" aria-expanded="false" aria-controls="p-q1">
+            <span>aftercare?</span><span class="chev" aria-hidden="true"></span>
+          </button>
+          <div class="panel answer" id="p-q1" role="region" aria-labelledby="t-q1" hidden>
+            <!-- TODO: add aftercare answer -->
+            <p>aftercare info coming soon.</p>
+          </div>
+        </div>
+        <div class="qa">
+          <button class="toggle sub" id="t-q2" aria-expanded="false" aria-controls="p-q2">
+            <span>will you draw me a custom tattoo?</span><span class="chev" aria-hidden="true"></span>
+          </button>
+          <div class="panel answer" id="p-q2" role="region" aria-labelledby="t-q2" hidden>
+            <p>yes! you can ask for any custom. there are some ideas that are beautiful but outside of my skillset/comfort zone. in these cases, i might try to refer you to another tattooer (animals, cybersigilism, large-scale, low-detail blackwork)</p>
+          </div>
+        </div>
+        <div class="qa">
+          <button class="toggle sub" id="t-q3" aria-expanded="false" aria-controls="p-q3">
+            <span>do i have to be 18+?</span><span class="chev" aria-hidden="true"></span>
+          </button>
+          <div class="panel answer" id="p-q3" role="region" aria-labelledby="t-q3" hidden>
+            <p>yes! i will not tattoo you if you are under the age of 18!!! even if you bring your parents!!!</p>
+          </div>
+        </div>
+        <div class="qa">
+          <button class="toggle sub" id="t-q4" aria-expanded="false" aria-controls="p-q4">
+            <span>what does it feel like...</span><span class="chev" aria-hidden="true"></span>
+          </button>
+          <div class="panel answer" id="p-q4" role="region" aria-labelledby="t-q4" hidden>
+            <p>handpoke tattoos are generally less painful than "traditional" machine tattooing (in my personal experience!) it still feels like a tattoo, but if you have bad memories from your 10-year-old india ink sewing needle stick n poke, it's not like that...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
 
 <script>
 /* Dot positions are taken from the glyph outlines of "G.B. Jones Lite"
@@ -143,6 +286,15 @@ if (reduceMotion) {
 } else {
   setTimeout(() => next(0), 400); // short beat before starting
 }
+
+/* ---- Dropdown sections: click to open, click again to snap shut ---- */
+document.querySelectorAll(".toggle").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const open = btn.getAttribute("aria-expanded") === "true";
+    btn.setAttribute("aria-expanded", String(!open));
+    document.getElementById(btn.getAttribute("aria-controls")).hidden = open;
+  });
+});
 </script>
 </body>
 </html>
