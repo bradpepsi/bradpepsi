@@ -1,0 +1,11 @@
+<svg viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    circle { opacity: 0; animation: pop 0.3s forwards; }
+    @keyframes pop { to { opacity: 1; } }
+  </style>
+  <!-- one <circle> per dot, each with its own delay -->
+  <circle cx="60" cy="45" r="4" style="animation-delay:0.00s"/>
+  <circle cx="75" cy="45" r="4" style="animation-delay:0.05s"/>
+  <circle cx="90" cy="45" r="4" style="animation-delay:0.10s"/>
+  <!-- ... -->
+</svg>
