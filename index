@@ -1,11 +1,148 @@
-<svg viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
-  <style>
-    circle { opacity: 0; animation: pop 0.3s forwards; }
-    @keyframes pop { to { opacity: 1; } }
-  </style>
-  <!-- one <circle> per dot, each with its own delay -->
-  <circle cx="60" cy="45" r="4" style="animation-delay:0.00s"/>
-  <circle cx="75" cy="45" r="4" style="animation-delay:0.05s"/>
-  <circle cx="90" cy="45" r="4" style="animation-delay:0.10s"/>
-  <!-- ... -->
-</svg>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brad Pepsi</title>
+<style>
+  body {
+    margin: 0;
+    background: #fff;
+    font-family: system-ui, sans-serif;
+  }
+  header {
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px 8px;
+  }
+  #title { width: min(760px, 100%); height: auto; }
+  /* Ink dots start hidden and pop in instantly: no fade, no scaling */
+  #title circle.ink { opacity: 0; }
+  #title circle.ink.on { opacity: 1; }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+</style>
+</head>
+<body>
+
+<header>
+  <svg id="title" role="img" aria-label="Brad Pepsi" viewBox="34 0 5412 1045"></svg>
+</header>
+
+<main>
+  <p>Your page content goes here.</p>
+</main>
+
+<script>
+/* Dot positions are taken from the glyph outlines of "G.B. Jones Lite"
+   by Nat Pyper (SIL Open Font License 1.1), laid out as "Brad Pepsi".
+   Coordinates are in font units (1000 per em), y pointing up. */
+
+// ---- Settings you can tweak -------------------------------------------
+const COLOR     = "#000";       // the "ink" dots
+const STENCIL_COLOR   = "#7b4fd6";  // faint stencil guide
+const STENCIL_OPACITY = 0.25;
+const JITTER    = 14;      // how far ink can land off the stencil (font units;
+                           // dot radius is 54, so 14 = "almost exactly on top")
+const DOT_R     = 54;     // dot radius in font units (the font's own size)
+
+// Order: "letters" = one letter at a time, dots in random order within it
+//        "random"  = every dot in the whole title in random order
+const ORDER     = "letters";
+
+// Timing, in milliseconds between dots
+const MIN_DELAY = 25;      // fastest gap
+const MAX_DELAY = 140;     // slowest normal gap
+const PAUSE_CHANCE = 0.06; // chance of a brief "hesitation" after a dot
+const PAUSE_MS  = [200, 450]; // range of that hesitation
+const LETTER_PAUSE = [120, 300]; // extra pause between letters ("letters" mode)
+// -----------------------------------------------------------------------
+
+// One array per letter: [x, y] for every dot
+const LETTERS = [
+  [[128,696],[253,696],[378,696],[440,589],[128,482],[502,482],[190,376],[315,376],[440,376],[128,268],[502,268],[564,161],[128,54],[253,54],[378,54],[502,54]],
+  [[796,482],[921,482],[1046,482],[1108,376],[796,268],[796,54]],
+  [[1378,482],[1502,482],[1564,376],[1378,268],[1502,268],[1627,268],[1316,161],[1690,161],[1378,54],[1502,54],[1752,54]],
+  [[2308,696],[2308,482],[2183,482],[2058,482],[1996,376],[2308,268],[1934,268],[1996,161],[2308,54],[2183,54],[2058,54]],
+  [[3064,696],[3189,696],[3314,696],[3376,589],[3064,482],[3438,482],[3126,376],[3252,376],[3376,376],[3064,268],[3064,54]],
+  [[3733,482],[3858,482],[3670,376],[3920,376],[3733,268],[3858,268],[3670,161],[3733,54],[3858,54],[3982,54]],
+  [[4214,482],[4339,482],[4464,482],[4526,376],[4214,268],[4588,268],[4526,161],[4214,54],[4339,54],[4464,54],[4214,-161]],
+  [[4896,482],[5020,482],[4834,376],[4771,268],[4896,268],[5020,268],[5144,268],[5082,161],[4896,54],[5020,54]],
+  [[5352,696],[5352,268],[5352,54]]
+];
+
+const TOP = 790; // flips font y (up) into SVG y (down)
+
+const rand  = (a, b) => a + Math.random() * (b - a);
+const shuffle = arr => {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+
+const svg = document.getElementById("title");
+const NS = "http://www.w3.org/2000/svg";
+
+// Stencil layer first, so the ink always sits on top of it
+const stencil = document.createElementNS(NS, "g");
+stencil.setAttribute("fill", STENCIL_COLOR);
+stencil.setAttribute("opacity", STENCIL_OPACITY);
+svg.appendChild(stencil);
+LETTERS.flat().forEach(([x, y]) => {
+  const g = document.createElementNS(NS, "circle");
+  g.setAttribute("cx", x);
+  g.setAttribute("cy", TOP - y);
+  g.setAttribute("r", DOT_R);
+  stencil.appendChild(g);
+});
+
+// Ink dot: lands a hair off the stencil, a slightly different amount each load
+function makeDot([x, y]) {
+  const c = document.createElementNS(NS, "circle");
+  c.setAttribute("class", "ink");
+  c.setAttribute("cx", (x + rand(-JITTER, JITTER)).toFixed(1));
+  c.setAttribute("cy", (TOP - y + rand(-JITTER, JITTER)).toFixed(1));
+  c.setAttribute("r", (DOT_R + rand(-2, 2)).toFixed(1));
+  c.setAttribute("fill", COLOR);
+  svg.appendChild(c);
+  return c;
+}
+
+// Build the reveal queue: each item is { el, endOfLetter }
+let queue = [];
+if (ORDER === "random") {
+  const all = LETTERS.flat().map(d => ({ el: makeDot(d), endOfLetter: false }));
+  queue = shuffle(all);
+} else {
+  LETTERS.forEach(group => {
+    const items = group.map(d => ({ el: makeDot(d), endOfLetter: false }));
+    shuffle(items);
+    items[items.length - 1].endOfLetter = true;
+    queue.push(...items);
+  });
+}
+
+// Reveal one dot at a time with human-ish, uneven timing
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function next(i) {
+  if (i >= queue.length) return;
+  const item = queue[i];
+  item.el.classList.add("on");
+
+  // Skewed toward quick gaps, with occasional slower ones
+  let wait = MIN_DELAY + Math.pow(Math.random(), 2) * (MAX_DELAY - MIN_DELAY);
+  if (Math.random() < PAUSE_CHANCE) wait += rand(...PAUSE_MS);
+  if (item.endOfLetter) wait += rand(...LETTER_PAUSE);
+
+  setTimeout(() => next(i + 1), wait);
+}
+
+if (reduceMotion) {
+  queue.forEach(q => q.el.classList.add("on"));
+} else {
+  setTimeout(() => next(0), 400); // short beat before starting
+}
+</script>
+</body>
+</html>
