@@ -99,6 +99,42 @@
   }
   .answer { padding: 0 0 8px 1.25rem; }
   #p-faq { padding-top: 0; }
+
+  /* ---- Booking form ---- */
+  .booking { display: grid; gap: 14px; margin-top: 16px; }
+  .booking label, .booking legend { display: block; font-size: 0.85rem; margin: 0 0 4px; padding: 0; }
+  .booking .hint { color: var(--muted); font-size: 0.8rem; }
+  .booking .field { margin: 0; padding: 0; border: 0; min-width: 0; }
+  .booking .field > .hint { display: block; margin-top: 4px; }
+  .booking input[type="text"], .booking input[type="email"], .booking textarea {
+    display: block; width: 100%;
+    font: inherit; font-size: 1rem; /* 16px keeps iPhones from zooming in */
+    padding: 9px 10px;
+    border: 1px solid var(--ink); border-radius: 0;
+    background: #fff; color: inherit;
+  }
+  .booking textarea { min-height: 100px; resize: vertical; }
+  .booking textarea.short { min-height: 64px; }
+  .booking input:focus-visible, .booking textarea:focus-visible,
+  .booking .send:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .booking input[type="checkbox"] { accent-color: #000; width: 1.05rem; height: 1.05rem; margin: 0; }
+  .days { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+  .days label, .booking .check { display: inline-flex; align-items: center; gap: 7px; font-size: 0.95rem; margin: 0; }
+  .booking .invalid { border-color: #c0261f; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .send {
+    justify-self: start;
+    font: inherit; font-size: 1rem;
+    padding: 10px 20px;
+    background: var(--ink); color: #fff;
+    border: 1px solid var(--ink); border-radius: 0;
+    cursor: pointer;
+  }
+  .send:disabled { opacity: 0.5; cursor: default; }
+  .form-msg { margin: 0; color: #c0261f; font-size: 0.9rem; }
+  .thanks { margin-top: 16px; padding: 14px 16px; border: 1px solid var(--ink); }
+  .thanks[hidden], .form-msg[hidden], .booking[hidden] { display: none; }
+  .panel p.alt { margin-top: 22px; }
 </style>
 </head>
 <body>
@@ -125,9 +161,78 @@
         <span>book</span><span class="chev" aria-hidden="true"></span>
       </button>
       <div class="panel" id="p-book" role="region" aria-labelledby="t-book" hidden>
-        <p>please email <a href="mailto:hellobradpepsi@gmail.com">hellobradpepsi@gmail.com</a> with your name and an attached image or description of the flash or design you'd like, along with a rough estimate on size and desired placement.</p>
-        <p>if you have a specific budget, please include it here and i'll be more than happy to work within it!</p>
-        <p>if you have any other contact information of mine already, feel free to reach out elsewhere for tattoos.</p>
+        <p>fill this out with your idea and the days you're free. once you send it, i'll show you my number so we can lock in a time!</p>
+
+        <form id="booking-form" class="booking" novalidate>
+          <!-- spam trap: real people never see or fill this in -->
+          <div class="hp" aria-hidden="true">
+            <label>website <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+          </div>
+
+          <div class="field">
+            <label for="b-name">name</label>
+            <input type="text" id="b-name" name="name" autocomplete="name" required>
+          </div>
+
+          <div class="field">
+            <label for="b-email">email</label>
+            <input type="email" id="b-email" name="email" autocomplete="email" required>
+          </div>
+
+          <div class="field">
+            <label for="b-design">the flash or design you'd like</label>
+            <textarea id="b-design" name="design" required></textarea>
+            <span class="hint">describe it, or paste a link to an image. you can also text me images after you send this.</span>
+          </div>
+
+          <div class="field">
+            <label for="b-size">rough size</label>
+            <input type="text" id="b-size" name="size" placeholder="e.g. about 2 inches" required>
+          </div>
+
+          <div class="field">
+            <label for="b-place">desired placement</label>
+            <input type="text" id="b-place" name="placement" placeholder="e.g. left forearm" required>
+          </div>
+
+          <div class="field">
+            <label for="b-budget">budget <span class="hint">(optional, i'll happily work within it!)</span></label>
+            <input type="text" id="b-budget" name="budget">
+          </div>
+
+          <fieldset class="field">
+            <legend>days you're usually free</legend>
+            <div class="days">
+              <label><input type="checkbox" name="days" value="Mon"> mon</label>
+              <label><input type="checkbox" name="days" value="Tue"> tue</label>
+              <label><input type="checkbox" name="days" value="Wed"> wed</label>
+              <label><input type="checkbox" name="days" value="Thu"> thu</label>
+              <label><input type="checkbox" name="days" value="Fri"> fri</label>
+              <label><input type="checkbox" name="days" value="Sat"> sat</label>
+              <label><input type="checkbox" name="days" value="Sun"> sun</label>
+            </div>
+          </fieldset>
+
+          <div class="field">
+            <label for="b-dates">specific dates or times <span class="hint">(optional)</span></label>
+            <textarea id="b-dates" name="dates" class="short" placeholder="e.g. free any evening after 5, away Nov 20-27"></textarea>
+          </div>
+
+          <label class="check">
+            <input type="checkbox" name="over18" value="yes" required>
+            <span>i am 18 or older</span>
+          </label>
+
+          <p class="form-msg" id="booking-msg" role="alert" hidden></p>
+          <button type="submit" class="send" id="booking-send">send request</button>
+        </form>
+
+        <div class="thanks" id="booking-thanks" tabindex="-1" role="status" hidden>
+          <p><strong>thank you, <span id="thanks-name"></span>!</strong> i got your request.</p>
+          <p>text or call me at <a id="thanks-phone" href="#"></a> to pick a day and finish booking.</p>
+        </div>
+
+        <p class="alt">if you have any other contact information of mine already, feel free to reach out elsewhere for tattoos. prefer email? <a href="mailto:hellobradpepsi@gmail.com">hellobradpepsi@gmail.com</a></p>
       </div>
     </section>
 
@@ -198,6 +303,11 @@ const MAX_DELAY = 140;     // slowest normal gap
 const PAUSE_CHANCE = 0.06; // chance of a brief "hesitation" after a dot
 const PAUSE_MS  = [200, 450]; // range of that hesitation
 const LETTER_PAUSE = [120, 300]; // extra pause between letters ("letters" mode)
+
+// Looping: when the title is finished it holds, wipes clean, then draws again
+const LOOP       = true;   // false = play once
+const HOLD_MS    = 4500;   // how long the finished title stays up
+const GAP_MS     = 1200;   // how long only the purple stencil shows before redrawing
 // -----------------------------------------------------------------------
 
 // One array per letter: [x, y] for every dot
@@ -252,24 +362,39 @@ function makeDot([x, y]) {
   return c;
 }
 
-// Build the reveal queue: each item is { el, endOfLetter }
+// Build the reveal queue: each item is { el, endOfLetter }.
+// Called again on every loop, so each pass gets a fresh order and fresh placement.
 let queue = [];
-if (ORDER === "random") {
-  const all = LETTERS.flat().map(d => ({ el: makeDot(d), endOfLetter: false }));
-  queue = shuffle(all);
-} else {
-  LETTERS.forEach(group => {
-    const items = group.map(d => ({ el: makeDot(d), endOfLetter: false }));
-    shuffle(items);
-    items[items.length - 1].endOfLetter = true;
-    queue.push(...items);
-  });
+function buildQueue() {
+  svg.querySelectorAll("circle.ink").forEach(el => el.remove());
+  queue = [];
+  if (ORDER === "random") {
+    const all = LETTERS.flat().map(d => ({ el: makeDot(d), endOfLetter: false }));
+    queue = shuffle(all);
+  } else {
+    LETTERS.forEach(group => {
+      const items = group.map(d => ({ el: makeDot(d), endOfLetter: false }));
+      shuffle(items);
+      items[items.length - 1].endOfLetter = true;
+      queue.push(...items);
+    });
+  }
 }
+buildQueue();
 
 // Reveal one dot at a time with human-ish, uneven timing
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 function next(i) {
-  if (i >= queue.length) return;
+  if (i >= queue.length) {
+    if (LOOP && !reduceMotion) {
+      // hold the finished title, wipe the ink, then start over
+      setTimeout(() => {
+        buildQueue();                       // removes old ink, makes a fresh set
+        setTimeout(() => next(0), GAP_MS);
+      }, HOLD_MS);
+    }
+    return;
+  }
   const item = queue[i];
   item.el.classList.add("on");
 
@@ -286,6 +411,92 @@ if (reduceMotion) {
 } else {
   setTimeout(() => next(0), 400); // short beat before starting
 }
+
+/* ---- Booking form ---------------------------------------------------
+   Submissions are emailed to you by Web3Forms (free, no server needed):
+   1. Go to web3forms.com, enter your email, and they email you an access key.
+   2. Paste the key below.
+   3. Put your real number below. It is only shown after the form is sent.
+------------------------------------------------------------------------ */
+const WEB3FORMS_KEY = "YOUR_ACCESS_KEY_HERE";
+const PHONE_DISPLAY = "(555) 555-5555";
+const PHONE_LINK    = "+15555555555";   // digits only, with country code
+
+(function () {
+  const form   = document.getElementById("booking-form");
+  const msg    = document.getElementById("booking-msg");
+  const thanks = document.getElementById("booking-thanks");
+  const send   = document.getElementById("booking-send");
+
+  const showError = text => { msg.textContent = text; msg.hidden = false; };
+
+  function showThanks(name) {
+    document.getElementById("thanks-name").textContent = name;
+    const a = document.getElementById("thanks-phone");
+    a.textContent = PHONE_DISPLAY;
+    a.href = "sms:" + PHONE_LINK;
+    form.hidden = true;
+    thanks.hidden = false;
+    thanks.focus();
+  }
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    msg.hidden = true;
+    form.querySelectorAll(".invalid").forEach(el => el.classList.remove("invalid"));
+
+    // Required fields (name, email, design, size, placement, 18+)
+    const missing = [...form.querySelectorAll("[required]")].filter(el =>
+      el.type === "checkbox" ? !el.checked : !el.value.trim() || !el.checkValidity());
+    if (missing.length) {
+      missing.forEach(el => el.classList.add("invalid"));
+      missing[0].focus();
+      return showError(missing.some(el => el.type === "checkbox" && el.name === "over18")
+        ? "please fill in the required fields and confirm you're 18 or older."
+        : "please fill in the required fields.");
+    }
+
+    const fd = new FormData(form);
+    const days = fd.getAll("days");
+    const dates = (fd.get("dates") || "").trim();
+    if (!days.length && !dates) {
+      return showError("please pick at least one day you're free, or add specific dates.");
+    }
+
+    // Spam trap: bots fill the hidden field. Pretend it worked, send nothing.
+    if (fd.get("website")) return showThanks(fd.get("name"));
+
+    send.disabled = true;
+    send.textContent = "sending...";
+    try {
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: "new booking request: " + fd.get("name"),
+          from_name: "brad pepsi site",
+          name: fd.get("name"),
+          email: fd.get("email"),
+          design: fd.get("design"),
+          size: fd.get("size"),
+          placement: fd.get("placement"),
+          budget: fd.get("budget") || "(none given)",
+          open_days: days.join(", ") || "(none picked)",
+          specific_dates: dates || "(none given)",
+          over_18: "yes"
+        })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || "failed");
+      showThanks(fd.get("name"));
+    } catch (err) {
+      showError("something went wrong sending that. please email hellobradpepsi@gmail.com instead.");
+      send.disabled = false;
+      send.textContent = "send request";
+    }
+  });
+})();
 
 /* ---- Dropdown sections: click to open, click again to snap shut ---- */
 document.querySelectorAll(".toggle").forEach(btn => {
